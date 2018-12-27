@@ -5,12 +5,6 @@ var socket = io();
 // When connection is established by client with server
 socket.on('connect', function() {
     console.log('connected to server');
-
-    // Emitting only after establishing a connection
-    socket.emit('createMessage', {
-      to: 'jen',
-      text: 'hi'
-    });
 });
 
 // When connection drops on server end

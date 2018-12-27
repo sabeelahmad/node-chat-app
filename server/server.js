@@ -23,15 +23,33 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected!');
 
-  // Emitting data from server to client
+  // Emit event for user welcome
+  // socket.emit is used since it is for individual user not all
   socket.emit('newMessage', {
-    from: 'mike',
-    text: 'Testing data'
+    from: 'admin',
+    text: 'Welcome, to the chat!',
+    createdAt: new Date().getTime()
   });
 
+  // Emit event when user joins the chat
+  // Brodacast.emit works almost as io.emit but doesn't send the message to curent socket
+  socket.broadcast.emit('newMessage', {
+    from: 'admin',
+    text: 'New user has joined the chat.',
+    createdAt: new Date().getTime()
+  });
+
+
   // Listening for data from client to server
-  socket.on('createMessage', (newMessage) => {
-    console.log('Create Message', newMessage);
+  socket.on('createMessage', (message) => {
+    // as soon as data is recieved we call the emit method on io
+    // calling it on io emits the message to all clients not to a single user as
+    // in case of socket.emit()
+    io.emit('newMessage', {
+      from: message.from,
+      text: message.text,
+      createdAt: new Date().getTime()
+    });
   });
 
   // Connection drop on client side
