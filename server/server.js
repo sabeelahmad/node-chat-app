@@ -3,6 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const express = require('express');
 
+const {generateMessage} = require('./utils/message');
 const app = express();
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -25,37 +26,25 @@ io.on('connection', (socket) => {
 
   // Emit event for user welcome
   // socket.emit is used since it is for individual user not all
-  socket.emit('newMessage', {
-    from: 'admin',
-    text: 'Welcome, to the chat!',
-    createdAt: new Date().getTime()
-  });
+  socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app!'));
 
   // Emit event when user joins the chat
   // Brodacast.emit works almost as io.emit but doesn't send the message to curent socket
-  socket.broadcast.emit('newMessage', {
-    from: 'admin',
-    text: 'New user has joined the chat.',
-    createdAt: new Date().getTime()
-  });
+  socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user has joined the chat!'));
 
 
   // Listening for data from client to server
   socket.on('createMessage', (message) => {
-    // as soon as data is recieved we call the emit method on io
-    // calling it on io emits the message to all clients not to a single user as
-    // in case of socket.emit()
-    io.emit('newMessage', {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
-  });
+      // as soon as data is recieved we call the emit method on io
+      // calling it on io emits the message to all clients not to a single user as
+      // in case of socket.emit()
+      io.emit('newMessage', generateMessage(message.from, message.text));
 
-  // Connection drop on client side
-  // listen for individual socket drop not all
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
+      // Connection drop on client side
+      // listen for individual socket drop not all
+      socket.on('disconnect', () => {
+        console.log('Client disconnected');
+      });
   });
 });
 
