@@ -3,7 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const express = require('express');
 
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocationMessage} = require('./utils/message');
 const app = express();
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
@@ -31,6 +31,11 @@ io.on('connection', (socket) => {
   // Emit event when user joins the chat
   // Brodacast.emit works almost as io.emit but doesn't send the message to curent socket
   socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user has joined the chat!'));
+
+  // Listen for location send event by any connected user and then emit it to all users
+  socket.on('createLocation', (coords) => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+  });
 
 
   // Listening for data from client to server
