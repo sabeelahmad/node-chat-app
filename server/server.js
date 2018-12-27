@@ -34,11 +34,14 @@ io.on('connection', (socket) => {
 
 
   // Listening for data from client to server
-  socket.on('createMessage', (message) => {
+  socket.on('createMessage', (message, callback) => {
       // as soon as data is recieved we call the emit method on io
       // calling it on io emits the message to all clients not to a single user as
       // in case of socket.emit()
       io.emit('newMessage', generateMessage(message.from, message.text));
+
+      // Sending Acknowledgment to client that server has got the data
+      callback('Got it from the server');
 
       // Connection drop on client side
       // listen for individual socket drop not all

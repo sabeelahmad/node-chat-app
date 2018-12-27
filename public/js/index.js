@@ -15,4 +15,23 @@ socket.on('disconnect', function() {
 // Custom event - client listening for emit of data from server
 socket.on('newMessage', function(message) {
   console.log('New Message', message);
+
+  // Render message to screen in ol when a newMessage is emitted by another client and
+  // emitted by server
+  var li = $('<li></li>');
+  li.text(`${message.from}: ${message.text}`);
+  $('#msgs').append(li);
+});
+
+$('#msg-form').on('submit', function (e) {
+  // Prevent default form submission
+  e.preventDefault();
+
+  // Now take the value of form text field and emit that message from client side
+  socket.emit('createMessage', {
+    from: 'User',
+    text: $('[name=msg]').val()
+  }, function () {
+    // Acknowledgment
+  });
 });
