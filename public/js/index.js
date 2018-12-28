@@ -27,12 +27,15 @@ $('#msg-form').on('submit', function (e) {
   // Prevent default form submission
   e.preventDefault();
 
+  var msgTxtBox = $('[name=msg]');
   // Now take the value of form text field and emit that message from client side
   socket.emit('createMessage', {
     from: 'User',
-    text: $('[name=msg]').val()
+    text: msgTxtBox.val()
   }, function () {
     // Acknowledgment
+    // Clearing the message field for better UX
+    msgTxtBox.val(' ');
   });
 });
 
@@ -45,14 +48,20 @@ locationBtn.on('click', function () {
     alert("Geolocation not supported by your browser.");
   };
 
+  // Disable location button after clicked and fetching location is happening
+  locationBtn.attr('disabled', 'disabled').text('Sending Location...');
+
   // Get location of user
   navigator.geolocation.getCurrentPosition(function (position) {
+    // Make the location button active again
+    locationBtn.removeAttr('disabled').text('Send Location');
     // Emit a message from client side socket to all that will send location via server to all connected peers
     socket.emit('createLocation', {
       longitude: position.coords.longitude,
       latitude: position.coords.latitude
     });
   }, function () {
+    locationBtn.removeAttr('disabled').text('Send Location');
     // Error handler
     alert("Cannot fetch your location.");
   });
