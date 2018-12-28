@@ -61,34 +61,45 @@ io.on('connection', (socket) => {
 
   // Listen for location send event by any connected user and then emit it to all users
   socket.on('createLocation', (coords) => {
-    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
-  });
+    var user = users.getUser(socket.id);
 
+    if (user) {
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+    }
+  });
 
   // Listening for data from client to server
   socket.on('createMessage', (message, callback) => {
       // as soon as data is recieved we call the emit method on io
       // calling it on io emits the message to all clients not to a single user as
       // in case of socket.emit()
-      io.emit('newMessage', generateMessage(message.from, message.text));
 
-      // Sending Acknowledgment to client that server has got the data
-      callback('Got it from the server');
+      // Fetch user who has emitted the event using his/her socket id
+      var user = users.getUser(socket.id);
+
+      // if defined
+      if (user && isRealString(message.text)) {
+        io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+        // Sending Acknowledgment to client that server has got the data
+        callback('Got it from the server');
+      }
     });
-      // Connection drop on client side
-      // listen for individual socket drop not all
-      socket.on('disconnect', () => {
-        // Drop user from user list
-        var user = users.removeUser(socket.id);
 
-        // if any such user is found
-        if (user) {
-          // Update user list emit event
-          io.to(user.room).emit('updateUserList', users.getUserList(user.room));
-          // Emit message that user has left
-          io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the chat.`));
-        }
-      });
+    // Connection drop on client side
+    // listen for individual socket drop not all
+    socket.on('disconnect', () => {
+      // Drop user from user list
+      var user = users.removeUser(socket.id);
+
+      // if any such user is found
+      if (user) {
+        // Update user list emit event
+        io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+        // Emit message that user has left
+        io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the chat.`));
+      }
+    });
+    
 });
 
 server.listen(port, () => {

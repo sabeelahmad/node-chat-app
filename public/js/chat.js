@@ -68,7 +68,6 @@ $('#msg-form').on('submit', function (e) {
   var msgTxtBox = $('[name=msg]');
   // Now take the value of form text field and emit that message from client side
   socket.emit('createMessage', {
-    from: 'User',
     text: msgTxtBox.val()
   }, function () {
     // Acknowledgment
