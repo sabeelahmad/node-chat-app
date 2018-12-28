@@ -20,12 +20,22 @@ function scrollToBottom () {
 
 // When connection is established by client with server
 socket.on('connect', function() {
-    console.log('connected to server');
-});
+    // Take data from query string and pass to server
+    // By emitting an event for joining a room to which
+    // server will listen and handle it
+    var params = $.deparam(window.location.search);
 
-// When connection drops on server end
-socket.on('disconnect', function() {
-  console.log('Disconnected from server.');
+    socket.emit('join', params, function (err) {
+      // Handle Acknowledgment / error
+      if (err) {
+        // Alert user
+        alert(err);
+        // Redirect back to join page
+        window.location.href = '/';
+      } else {
+        console.log('No error');
+      }
+    });
 });
 
 // Custom event - client listening for emit of data from server
@@ -118,4 +128,24 @@ socket.on('newLocationMessage', function (message) {
   // a.attr('href', message.url);
   // li.append(a);
   // $('#msgs').append(li);
+});
+
+// Refreshing userList
+socket.on('updateUserList', function (users) {
+  // Create an ordered list of users
+  var ol = $('<ol></ol>');
+
+  // Iterate over the users currently in room
+  users.forEach(function(user) {
+    // Add li to ol
+    ol.append($('<li></li>').text(user));
+  });
+
+  // Change html of users in dom (not just append)
+  $('#users').html(ol);
+});
+
+// When connection drops on server end
+socket.on('disconnect', function() {
+  console.log('Disconnected from server.');
 });
