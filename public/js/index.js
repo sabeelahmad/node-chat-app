@@ -15,15 +15,23 @@ socket.on('disconnect', function() {
 // Custom event - client listening for emit of data from server
 socket.on('newMessage', function(message) {
   // console.log('New Message', message);
-
   // Creating timestamp using moment
   var formattedTime = moment(message.createdAt).format('h:mm a');
 
   // Render message to screen in ol when a newMessage is emitted by another client and
   // emitted by server
-  var li = $('<li></li>');
-  li.text(`${message.from} ${formattedTime}: ${message.text}`);
-  $('#msgs').append(li);
+  var template = $('#msg-template').html();
+  var html = Mustache.render(template, {
+    text: message.text,
+    from: message.from,
+    createdAt: formattedTime
+  });
+
+  $('#msgs').append(html);
+
+   // var li = $('<li></li>');
+  // li.text(`${message.from} ${formattedTime}: ${message.text}`);
+  // $('#msgs').append(li);
 });
 
 $('#msg-form').on('submit', function (e) {
@@ -77,10 +85,19 @@ socket.on('newLocationMessage', function (message) {
 
   var formattedTime = moment(message.createdAt).format('h:mm a');
 
-  var li = $('<li></li>');
-  var a = $('<a target="_blank">My Current Location</a>')
-  li.text(`${message.from} ${formattedTime}: `);
-  a.attr('href', message.url);
-  li.append(a);
-  $('#msgs').append(li);
+  var template = $('#location-msg-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    createdAt: formattedTime,
+    url: message.url
+  });
+
+  $('#msgs').append(html);
+
+  // var li = $('<li></li>');
+  // var a = $('<a target="_blank">My Current Location</a>')
+  // li.text(`${message.from} ${formattedTime}: `);
+  // a.attr('href', message.url);
+  // li.append(a);
+  // $('#msgs').append(li);
 });
